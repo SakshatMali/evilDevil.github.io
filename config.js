@@ -11,7 +11,7 @@ const config = {
             debug: false
         }
     },
-    scene: [Start,Level1,Level2]
+    scene: [Start,Level1,Level2,Retry1,Retry2,Start1,Start2,End]
 };
 
 const game = new Phaser.Game(config);

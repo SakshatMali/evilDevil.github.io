@@ -1,12 +1,14 @@
-class Level2 extends Phaser.Scene{
+class Level2 extends Phaser.Scene {
+
     constructor() {
         super("level2");
     }
 
     preload() {
 
-        // this.load.audio("backmusic" , 'assets/backmusic.mp3');
-
+        this.load.audio("gameoversound" , 'assets/gameoversound.mp3');
+        this.load.audio("donesound" , 'assets/donesound.mp3');
+        this.load.audio("rubysound" , 'assets/rubysound.mp3');
         this.load.image("background" , 'assets/background.png');
         this.load.image("boundary" , 'assets/boundary.png');
         this.load.image("key" , 'assets/key.png');
@@ -25,24 +27,16 @@ class Level2 extends Phaser.Scene{
 
     create() {
 
-        // this.music=this.sound.add("backmusic");
-        // var musicConfig = {
-        //     mute: false,
-        //     volume: 0.1,
-        //     rate: 1,
-        //     detune: 0,
-        //     seek: 0,
-        //     loop: true,
-        //     delay: 0
-        // }
-        // this.music.play(musicConfig);
+        this.rubysound=this.sound.add("rubysound");
+        this.gameoversound=this.sound.add("gameoversound");
+        this.donesound=this.sound.add("donesound");
 
-        this.sc=0;
+        this.sc=6;
+        this.over=false;
+
         this.background=this.add.tileSprite(400,300,0,0,'background');
-        // this.gate=this.physics.add.image(760,50,'gate');
-        // this.key = this.physics.add.image(80,80,'key');
+
         this.boundary=this.physics.add.image(400,300,'boundary');
-        // this.boundary.angle=90;
         this.boundary.setImmovable(true);
         this.boundary.body.allowGravity = false;
 
@@ -53,7 +47,6 @@ class Level2 extends Phaser.Scene{
         this.platform2 = this.physics.add.image(300, 250, 'platform');
         this.platform2.setImmovable(true);
         this.platform2.body.allowGravity = false;
-        // this.platform2.setVelocityX(-50);
 
         this.platform3 = this.physics.add.image(80, 430, 'platform');
         this.platform3.setImmovable(true);
@@ -107,10 +100,6 @@ class Level2 extends Phaser.Scene{
         this.gate.setImmovable(true);
         this.gate.body.allowGravity = false;
 
-        // this.spike=this.physics.add.image(50,400,'spike');
-        // this.spike.setImmovable(true);
-        // this.spike.body.allowGravity = false;
-
         this.bigPlatform = this.physics.add.image(400, 680, 'platform').setScale(2);
         this.bigPlatform.setImmovable(true);
         this.bigPlatform.body.allowGravity = false;
@@ -155,16 +144,13 @@ class Level2 extends Phaser.Scene{
         this.key = this.physics.add.sprite(50, 530, 'key');
         this.key.body.allowGravity = false;
 
-        this.key2 = this.physics.add.sprite(755, 70, 'key');
+        this.key2 = this.physics.add.sprite(755, 110, 'key');
         this.key2.body.allowGravity = false;
 
         this.bullet = this.physics.add.sprite(800, 500, 'bullet');
         this.bullet.angle=-90;
         this.bullet.body.allowGravity = false;
         this.bulletSpeed = Phaser.Math.GetSpeed(600,3);
-
-        
-
 
         this.anims.create({
             key: 'left',
@@ -186,14 +172,16 @@ class Level2 extends Phaser.Scene{
             repeat: -1
         });
 
-        this.scb=this.add.text(10, 10, "sc: 0", { 
+        this.scb=this.add.text(10, 10, "Score: 6", { 
             fontFamily: 'Georgia, "Goudy Bookletter 1911", Times,   serif',
-            color: "black" 
+            color: "black",
+            fontSize: 25 
         });
-        this.gameOverText=this.add.text(400, 30, "", { 
-            fontFamily: 'Georgia, "Goudy Bookletter 1911", Times,   serif',
-            color: "black" 
-        });
+
+        // this.gameOverText=this.add.text(400, 30, "", { 
+        //     fontFamily: 'Georgia, "Goudy Bookletter 1911", Times,   serif',
+        //     color: "black" 
+        // });
 
         this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -227,33 +215,28 @@ class Level2 extends Phaser.Scene{
         
     }
 
-    update(time , delta){
+    update(time , delta) {
+
         this.background.tilePositionX+=2;
 
-        this.scb.setText("sc: "+this.sc);
+        this.scb.setText("Score: "+this.sc);
 
-        if (this.cursors.left.isDown) {
+        if (this.cursors.left.isDown && this.over==false) {
             this.player.setVelocityX(-160);
-    
             this.player.anims.play('left', true);
-        } else if (this.cursors.right.isDown) {
+        }
+        else if (this.cursors.right.isDown && this.over==false) {
             this.player.setVelocityX(160);
-    
             this.player.anims.play('right', true);
-        } else {
+        } 
+        else {
             this.player.setVelocityX(0);
-    
             this.player.anims.play('turn');
         }
     
-        if (this.cursors.up.isDown && this.player.body.touching.down) {
-            // sc++;
+        if (this.cursors.up.isDown && this.player.body.touching.down && this.over==false) {
             this.player.setVelocityY(-250);
         }
-    
-        // if (this.player.y>620) {
-        //     this.gameOver();
-        // }
     
         if (this.player.x>800) {
             this.player.x=0;
@@ -274,66 +257,71 @@ class Level2 extends Phaser.Scene{
 
         if (this.enemy2.y>370){
             this.enemy2.setVelocityY(-100);
-            // this.enemy.flipX=true;
         }
         else if (this.enemy2.y<20){
             this.enemy2.setVelocityY(100);
-            // this.enemy.flipX=false;
         }
 
         if (this.movingPlatform.y<100) {
             this.movingPlatform.setVelocityY(50);
-        } else if (this.movingPlatform.y>550) {
+        } 
+        else if (this.movingPlatform.y>550) {
             this.movingPlatform.setVelocityY(-50);
         }
 
         this.bullet.x-=this.bulletSpeed*delta;
+
         if (this.bullet.x < 0) {
             this.bullet.x = 800;
-            // this.bullet2.y = 650;
         }
 
-        if (this.sc>=5){
-            // gate.disableBody(false, false);
-            // gate.disableBody(true, true);
+        if (this.sc>=13){
             this.gate.enableBody(false,0,0,true,true);
         }else {
-            // gate.disableBody();
             this.gate.disableBody(true, true);
         }
         
     }
 
     collectRuby(player , ruby) {
+
         this.sc++;
         ruby.disableBody(true, true);
-        
+        this.rubysound.play(); 
     }
 
     openDoor(player , key) {
+
         this.sc++;
         this.closedoor.disableBody(true, true);
         key.disableBody(true,true);
-        
+        this.rubysound.play();
     }
 
     openGate() {
-        // sc++;
         this.gate.disableBody(false, false);
     }
 
     gameOver() {
-        // sc++;
-        // ruby.disableBody(true, true);
-        this.gameOverText.setText("GO");
-        // this.scene.pause();
+
+        this.over=true;
+        this.gameoversound.play();
+        this.player.alpha-=0.1;
+        this.time.addEvent({
+            delay: 1000,
+            callback: ()=>{
+                this.scene.start("retry2");
+            },
+        })
     }
 
     gameComplete() {
-        // sc++;
-        // ruby.disableBody(true, true);
-        this.gameOverText.setText("DONE");
-        // this.scene.pause();
+        this.donesound.play();
+        this.time.addEvent({
+            delay: 500,
+            callback: ()=>{
+                this.scene.start("end");
+            },
+        });
     }
-
 }
