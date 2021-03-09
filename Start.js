@@ -11,12 +11,14 @@ class Start extends Phaser.Scene {
         this.load.audio("backmusic" , 'assets/backmusic.mp3');
         this.load.image("title" , "assets/title.png");
         this.load.image("story" , "assets/story.png");
+        this.load.image("howto" , "assets/howto.png");
     }
 
     create() {
 
-        this.add.image(400,100,"title").setScale(1.5);
-        this.add.image(400,350,"story");
+        this.add.image(400,100,"title");
+        this.add.image(400,250,"story");
+        this.add.image(450,450,"howto");
 
         this.music=this.sound.add("backmusic");
         var musicConfig = {
